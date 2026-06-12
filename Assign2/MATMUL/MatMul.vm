@@ -1,0 +1,96 @@
+function MAC.MatMulOnly 4
+
+    push argument 3
+    push constant 0
+    gt
+    not
+    if-goto THROW_ERROR
+
+    push argument 4
+    push constant 0
+    gt
+    not
+    if-goto THROW_ERROR
+
+    push argument 6
+    push constant 0
+    gt
+    not
+    if-goto THROW_ERROR
+
+    push argument 4
+    push argument 5
+    eq
+    not
+    if-goto THROW_ERROR
+
+    push constant 0
+    pop local 0
+
+    push argument 2
+    pop local 2
+
+    push argument 0
+    pop local 3
+
+label ROW_LOOP_START
+    push local 0
+    push argument 3
+    eq
+    if-goto ROW_LOOP_END
+
+    push constant 0
+    pop local 1
+
+label COL_LOOP_START
+    push local 1
+    push argument 6
+    eq
+    if-goto COL_LOOP_END
+
+    push local 3
+    
+    push argument 1
+    push local 1
+    add
+    
+    push argument 4
+    push argument 6
+
+    call MAC.RowXCol 4
+
+    push local 2
+    pop pointer 1
+    pop that 0
+    
+    push local 2
+    push constant 1
+    add
+    pop local 2
+
+    push local 1
+    push constant 1
+    add
+    pop local 1
+    goto COL_LOOP_START
+
+label COL_LOOP_END
+    push local 3
+    push argument 4
+    add
+    pop local 3
+
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto ROW_LOOP_START
+
+label ROW_LOOP_END
+    push argument 2
+    return
+
+label THROW_ERROR
+    push constant 1
+    neg
+    return

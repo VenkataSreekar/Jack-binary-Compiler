@@ -1,0 +1,7 @@
+CHIP Counter1Bit {
+    OUT out;
+
+    PARTS:
+    Not(in=currentOut, out=invertedOut);
+    DFF(in=invertedOut, out=currentOut, out=out);
+}

@@ -1,0 +1,75 @@
+// Main.jack
+
+class Main {
+
+    function void main() {
+        var Array  inputData;   // flat 5x5 = 25 elements
+        var Array  filterData;  // flat 3x3 = 9 elements
+        var Conv   conv;
+        var int    i;
+
+        let inputData = Array.new(81);
+        // Row 0
+        let inputData[0]  = 0; let inputData[1]  = 0; let inputData[2]  = 0; let inputData[3]  = 0; let inputData[4]  = 0; let inputData[5]  = 0; let inputData[6]  = 0; let inputData[7]  = 0; let inputData[8]  = 0;
+        // Row 1
+        let inputData[9]  = 0; let inputData[10] = 0; let inputData[11] = 0; let inputData[12] = 0; let inputData[13] = 0; let inputData[14] = 0; let inputData[15] = 0; let inputData[16] = 0; let inputData[17] = 0;
+        // Row 2
+        let inputData[18] = 0; let inputData[19] = 0; let inputData[20] = 20; let inputData[21] = 20; let inputData[22] = 20; let inputData[23] = 20; let inputData[24] = 20; let inputData[25] = 0; let inputData[26] = 0;
+        // Row 3
+        let inputData[27] = 0; let inputData[28] = 0; let inputData[29] = 20; let inputData[30] = 20; let inputData[31] = 20; let inputData[32] = 20; let inputData[33] = 20; let inputData[34] = 0; let inputData[35] = 0;
+        // Row 4
+        let inputData[36] = 0; let inputData[37] = 0; let inputData[38] = 20; let inputData[39] = 20; let inputData[40] = 20; let inputData[41] = 20; let inputData[42] = 20; let inputData[43] = 0; let inputData[44] = 0;
+        // Row 5
+        let inputData[45] = 0; let inputData[46] = 0; let inputData[47] = 20; let inputData[48] = 20; let inputData[49] = 20; let inputData[50] = 20; let inputData[51] = 20; let inputData[52] = 0; let inputData[53] = 0;
+        // Row 6
+        let inputData[54] = 0; let inputData[55] = 0; let inputData[56] = 20; let inputData[57] = 20; let inputData[58] = 20; let inputData[59] = 20; let inputData[60] = 20; let inputData[61] = 0; let inputData[62] = 0;
+        // Row 7
+        let inputData[63] = 0; let inputData[64] = 0; let inputData[65] = 0; let inputData[66] = 0; let inputData[67] = 0; let inputData[68] = 0; let inputData[69] = 0; let inputData[70] = 0; let inputData[71] = 0;
+        // Row 8
+        let inputData[72] = 0; let inputData[73] = 0; let inputData[74] = 0; let inputData[75] = 0; let inputData[76] = 0; let inputData[77] = 0; let inputData[78] = 0; let inputData[79] = 0; let inputData[80] = 0;
+
+        // ----------------------------------------------------------
+        // 2. Allocate and populate the 3x3 Laplacian filter.
+        //    Kernel:
+        //      [ 0, -1,  0 ]
+        //      [-1,  4, -1 ]
+        //      [ 0, -1,  0 ]
+        // ----------------------------------------------------------
+        let filterData = Array.new(9);
+        let filterData[0] = 0;
+        let filterData[1] = -1;
+        let filterData[2] = 0;
+        let filterData[3] = -1;
+        let filterData[4] = 4;
+        let filterData[5] = -1;
+        let filterData[6] = 0;
+        let filterData[7] = -1;
+        let filterData[8] = 0;
+
+        // ----------------------------------------------------------
+        // 3. Create Conv object (N=9), load filter and input.
+        //    Stride defaults to 1 inside the constructor.
+        // ----------------------------------------------------------
+        let conv = Conv.new(9);
+        do conv.initFilter(filterData);
+        do conv.getArrayInput(inputData, 9);
+
+        // ----------------------------------------------------------
+        // 4. Run convolution and print result.
+        // ----------------------------------------------------------
+        do Output.printString("9x9 input, 3x3 Laplacian filter, stride=1");
+        do Output.println();
+
+        do conv.conv2d();
+        do conv.printOutput();
+
+        // ----------------------------------------------------------
+        // 5. Clean up.
+        // ----------------------------------------------------------
+        do inputData.dispose();
+        do filterData.dispose();
+        do conv.dispose();
+
+        return;
+    }
+}

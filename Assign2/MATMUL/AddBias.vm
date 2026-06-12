@@ -1,0 +1,85 @@
+function MAC.AddBias 4
+
+    push argument 2
+    push constant 0
+    gt
+    not
+    if-goto THROW_ERROR
+
+    push argument 3
+    push constant 0
+    gt
+    not
+    if-goto THROW_ERROR
+
+    push argument 2
+    push argument 4
+    eq
+    not
+    if-goto THROW_ERROR
+
+    push argument 3
+    push argument 5
+    eq
+    not
+    if-goto THROW_ERROR
+
+    push argument 2
+    push argument 3
+    call Math.multiply 2
+    pop local 3
+
+    push constant 0
+    pop local 0
+
+    push argument 0
+    pop local 1
+    
+    push argument 1
+    pop local 2
+
+label BIAS_LOOP_START
+    push local 0
+    push local 3
+    eq
+    if-goto BIAS_LOOP_END
+
+    push local 1
+    pop pointer 1
+    push that 0
+
+    push local 2
+    pop pointer 1
+    push that 0
+
+    add
+
+    push local 1
+    pop pointer 1
+    pop that 0
+
+    push local 1
+    push constant 1
+    add
+    pop local 1
+
+    push local 2
+    push constant 1
+    add
+    pop local 2
+
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    
+    goto BIAS_LOOP_START
+
+label BIAS_LOOP_END
+    push argument 0
+    return
+
+label THROW_ERROR
+    push constant 1
+    neg
+    return

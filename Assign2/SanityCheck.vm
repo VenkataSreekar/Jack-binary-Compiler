@@ -1,0 +1,45 @@
+function MAC.SanityCheck 0
+
+    push argument 0
+    push constant 0
+    gt
+    not
+    if-goto THROW_ERROR
+
+    push argument 1
+    push constant 0
+    gt
+    not
+    if-goto THROW_ERROR
+
+    push argument 3
+    push constant 0
+    gt
+    not
+    if-goto THROW_ERROR
+
+    push argument 1
+    push argument 2
+    eq
+    not
+    if-goto THROW_ERROR
+
+    push argument 4
+    push argument 0
+    eq
+    not
+    if-goto THROW_ERROR
+
+    push argument 5
+    push argument 3
+    eq
+    not
+    if-goto THROW_ERROR
+
+    push constant 1
+    return
+
+label THROW_ERROR
+    push constant 1
+    neg
+    return

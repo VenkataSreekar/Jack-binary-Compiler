@@ -1,0 +1,160 @@
+// Conv.jack
+
+class Conv {
+
+    static Array ArrayFilter;   // 3x3 filter, flattened to length 9
+    static int   stride;        // stride value: 1 or 2
+
+    field Array  ArrayInput;    // input matrix, row-major flattened (N*N)
+    field Array  ArrayOutput;   // output matrix, row-major flattened (O*O)
+    field int    ArraySize;     // side length N of input
+
+    constructor Conv new(int N) {
+        let ArraySize   = N;
+        let stride      = 1;           // default stride = 1
+        let ArrayFilter = Array.new(9);
+        // ArrayInput and ArrayOutput are allocated in getArrayInput()
+        // after we have a valid N.
+        let ArrayInput  = Array.new(N * N);
+        let ArrayOutput = Array.new(calcOutputDim() * calcOutputDim());
+        return this;
+    }
+
+    method void setStride(int s) {
+        let stride = s;
+        return;
+    }
+
+    // ---------------------------------------------------------------
+    // initFilter: copy 9 values from the caller-supplied array into
+    // the static ArrayFilter.
+    //
+    // Kernel used: Laplacian edge-detector
+    //   [ 0, -1,  0 ]
+    //   [-1,  4, -1 ]
+    //   [ 0, -1,  0 ]
+    // This highlights intensity discontinuities in the input.
+    // ---------------------------------------------------------------
+    method void initFilter(Array values) {
+        var int i;
+        let i = 0;
+        while (i < 9) {
+            let ArrayFilter[i] = values[i];
+            let i = i + 1;
+        }
+        return;
+    }
+
+    // ---------------------------------------------------------------
+    // getArrayInput: copy size*size entries from the caller's flat
+    // array into ArrayInput.
+    // ---------------------------------------------------------------
+    method void getArrayInput(Array input, int size) {
+        var int i;
+        let ArraySize = size;
+        let i = 0;
+        while (i < (size * size)) {
+            let ArrayInput[i] = input[i];
+            let i = i + 1;
+        }
+        return;
+    }
+
+    method int calcOutputDim() {
+        return ((ArraySize - 3) / stride) + 1;
+    }
+
+    method void conv2d() {
+        var int outDim;
+        var int i;        // top-left row of current window
+        var int j;        // top-left col of current window
+        var int fr;       // filter row offset (0-2)
+        var int fc;       // filter col offset (0-2)
+        var int sum;      // accumulator for one output element
+        var int oi;       // output row index
+        var int oj;       // output col index
+        var int k;        // flat output index
+        var int inputIdx; // flat input index
+
+        let outDim = calcOutputDim();
+
+        // Bounds check
+        if (outDim < 1) {
+            do Memory.poke(0, 99);   // error flag in RAM[0]
+            return;
+        }
+
+        let oi = 0;
+        let i  = 0;
+        while (i < (ArraySize - 2)) {        // top-left row: 0 .. N-3
+            let oj = 0;
+            let j  = 0;
+            while (j < (ArraySize - 2)) {    // top-left col: 0 .. N-3
+
+                // --- MAC over the 3x3 window ---
+                let sum = 0;
+                let fr  = 0;
+                while (fr < 3) {
+                    let fc = 0;
+                    while (fc < 3) {
+                        let inputIdx = ((i + fr) * ArraySize) + (j + fc);
+                        let sum = sum + (ArrayInput[inputIdx] * ArrayFilter[(fr * 3) + fc]);
+                        let fc = fc + 1;
+                    }
+                    let fr = fr + 1;
+                }
+
+                // --- store result ---
+                let k = (oi * outDim) + oj;
+                let ArrayOutput[k] = sum;
+
+                let oj = oj + 1;
+                let j  = j  + stride;
+            }
+            let oi = oi + 1;
+            let i  = i  + stride;
+        }
+        return;
+    }
+
+    // ---------------------------------------------------------------
+    // printOutput: print the output matrix row-by-row.
+    // Numbers are separated by a space; each row ends with a newline.
+    // ---------------------------------------------------------------
+    method void printOutput() {
+        var int outDim;
+        var int r;
+        var int c;
+
+        let outDim = calcOutputDim();
+
+        do Output.printString("Output matrix:");
+        do Output.println();
+
+        let r = 0;
+        while (r < outDim) {
+            let c = 0;
+            while (c < outDim) {
+                do Output.printInt(ArrayOutput[(r * outDim) + c]);
+                if (c < (outDim - 1)) {
+                    do Output.printChar(32);   // ASCII space
+                }
+                let c = c + 1;
+            }
+            do Output.println();
+            let r = r + 1;
+        }
+        return;
+    }
+
+    // ---------------------------------------------------------------
+    // dispose: release all heap memory owned by this object.
+    // ---------------------------------------------------------------
+    method void dispose() {
+        do ArrayInput.dispose();
+        do ArrayOutput.dispose();
+        do ArrayFilter.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

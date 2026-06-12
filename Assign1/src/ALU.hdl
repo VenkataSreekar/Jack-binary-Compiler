@@ -1,0 +1,98 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/2/ALU.hdl
+/**
+ * ALU (Arithmetic Logic Unit):
+ * Computes out = one of the following functions:
+ *                0, 1, -1,
+ *                x, y, !x, !y, -x, -y,
+ *                x + 1, y + 1, x - 1, y - 1,
+ *                x + y, x - y, y - x,
+ *                x & y, x | y
+ * on the 16-bit inputs x, y,
+ * according to the input bits zx, nx, zy, ny, f, no.
+ * In addition, computes the two output bits:
+ * if (out == 0) zr = 1, else zr = 0
+ * if (out < 0)  ng = 1, else ng = 0
+ */
+// Implementation: Manipulates the x and y inputs
+// and operates on the resulting values, as follows:
+// if (zx == 1) sets x = 0        // 16-bit constant
+// if (nx == 1) sets x = !x       // bitwise not
+// if (zy == 1) sets y = 0        // 16-bit constant
+// if (ny == 1) sets y = !y       // bitwise not
+// if (f == 1)  sets out = x + y  // integer 2's complement addition
+// if (f == 0)  sets out = x & y  // bitwise and
+// if (no == 1) sets out = !out   // bitwise not
+
+CHIP ALU {
+    IN  
+        x[16], y[16],  // 16-bit inputs        
+        zx, // zero the x input?
+        nx, // negate the x input?
+        zy, // zero the y input?
+        ny, // negate the y input?
+        f,  // compute (out = x + y) or (out = x & y)?
+        no; // negate the out output?
+    OUT 
+        out[16], // 16-bit output
+        zr,      // if (out == 0) equals 1, else 0
+        ng;      // if (out < 0)  equals 1, else 0
+
+    PARTS:  
+    //// Replace this comment with your code.
+    Mux16(a=x, b=false, sel=zx, out=x1);  // for zx input
+    
+    Not16(in=x1, out=notx1);
+    Mux16(a=x1, b=notx1, sel=nx, out=x2); // for nx input
+
+    Mux16(a=y, b=false, sel=zy, out=y1); // for zy input
+    
+    Not16(in=y1, out=noty1);
+    Mux16(a=y1, b=noty1, sel=ny, out=y2); // for ny input
+
+    Add16(a=x2, b=y2, out=addOut);
+    And16(a=x2, b=y2, out=andOut);
+    Mux16(a=andOut, b=addOut, sel=f, out=fOut);  // for f input
+
+    Not16(in=fOut, out=notfOut);
+    Mux16(a=fOut, b=notfOut, sel=no, out=standardOut); // for no input
+
+
+    Multiplier(a=x, b=y, outL=mulHigh, outR=mulLow); // for multiplication
+    
+
+    // for right part of multiplication (lsb), out[0:15]
+    // using 101001 as the encoding for lower part of multiplication
+    Not(in=nx, out=notnx1);
+    Not(in=ny, out=notny1);
+    Not(in=f,  out=notf1);
+    And(a=zx, b=notnx1, out=m1A);
+    And(a=zy, b=notny1, out=m1B);
+    And(a=notf1, b=no, out=m1C);
+    And(a=m1A, b=m1B, out=m1Half);
+    And(a=m1Half, b=m1C, out=isMulLow);
+
+    // for left part of multiplication (msb), out[16:31]
+    // using 111000 as the encoding for higher part of multiplication
+    Not(in=ny, out=notny2);
+    Not(in=f, out=notf2);
+    Not(in=no, out=notno2);
+    And(a=zx, b=nx, out=m2A);
+    And(a=zy, b=notny2, out=m2B);
+    And(a=notf2, b=notno2, out=m2C);
+    And(a=m2A, b=m2B, out=m2Half);
+    And(a=m2Half, b=m2C, out=isMulHigh);
+
+    // verifying if the encoding is one of standard instuction or for the right part of mul
+    Mux16(a=standardOut, b=mulLow, sel=isMulLow, out=tempOut);
+    
+    // verifying if the encoding is for right part or left part
+    Mux16(a=tempOut, b=mulHigh, sel=isMulHigh, out=out, out[0..7]=outLow, out[8..15]=outHigh, out[15]=ng);
+
+    Or8Way(in=outLow, out=orLow);
+    Or8Way(in=outHigh, out=orHigh);
+    Or(a=orLow, b=orHigh, out=notZr);
+    Not(in=notZr, out=zr);
+}

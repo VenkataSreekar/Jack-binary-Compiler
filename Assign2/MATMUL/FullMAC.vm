@@ -1,0 +1,40 @@
+function MAC.FullMAC 0
+
+    push argument 0
+    push argument 1
+    push argument 2
+    push argument 4
+    push argument 5
+    push argument 6
+    push argument 7
+    call MAC.MatMulOnly 7
+    
+    pop temp 0
+    push temp 0
+    push constant 1
+    neg
+    eq
+    if-goto THROW_ERROR
+
+    push argument 2
+    push argument 3
+    push argument 4
+    push argument 7
+    push argument 8
+    push argument 9
+    call MAC.AddBias 6
+    
+    pop temp 0
+    push temp 0
+    push constant 1
+    neg
+    eq
+    if-goto THROW_ERROR
+
+    push argument 2
+    return
+
+label THROW_ERROR
+    push constant 1
+    neg
+    return
