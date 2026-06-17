@@ -6,7 +6,7 @@ The project is structured into three main assignments, directly inspired by the 
 
 ## 📂 Project Structure
 
-- **`Assign1/`**: Assembler (Assembly to Binary)
+- **`Tutorial-2/`**: Assembler (Assembly to Binary)
 - **`Assign2/`**: VM Translator (VM Bytecode to Assembly)
 - **`Assign3/`**: Jack Compiler (Jack High-Level Language to VM Bytecode)
 
@@ -14,7 +14,7 @@ The project is structured into three main assignments, directly inspired by the 
 
 ##  The Pipeline (Assignments)
 
-### Assignment 1: The Assembler (`assembly to binary`)
+### Totrial 2: The Assembler (`assembly to binary`)
 The first stage in the lower-level execution pipeline. This module translates programs written in Hack Assembly language (`.asm` files) into binary machine code (`.hack` files) that can be directly executed by the computer's hardware.
 * **Input**: `filename.asm`
 * **Output**: `filename.hack`
